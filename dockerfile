@@ -1,26 +1,37 @@
-# FROM openjdk:21 AS builder
-# ADD . /spring-petclinic
-# WORKDIR /spring-petclinic
-# RUN chmod +x mvnw
-# RUN ./mvnw package
+# # FROM openjdk:21 AS builder
+# # ADD . /spring-petclinic
+# # WORKDIR /spring-petclinic
+# # RUN chmod +x mvnw
+# # RUN ./mvnw package
 
 
-# FROM openjdk:17-jdk-alpine3.20 AS runner
-# EXPOSE 8080
+# # FROM openjdk:17-jdk-alpine3.20 AS runner
+# # EXPOSE 8080
+# # WORKDIR /spc
+# # COPY --from=builder /spring-petclinic/target/*.jar spc.jar
+# # CMD ["java", "-jar", "spring-petclinic.jar"]
+
+# FROM maven:3.9-eclipse-temurin-17 AS builder
+# # build the java code
+# COPY . /spc
 # WORKDIR /spc
-# COPY --from=builder /spring-petclinic/target/*.jar spc.jar
+# RUN mvn package
+# # this will create a spring petclinic jar file
+
+# FROM eclipse-temurin:17-jre AS runner
+# COPY --from=builder --chown=ubuntu /spc/target/spring-petclinic-3.3.0-SNAPSHOT.jar /app/spring-petclinic.jar
+# USER ubuntu
+# WORKDIR /app
+# EXPOSE 8080
 # CMD ["java", "-jar", "spring-petclinic.jar"]
 
 FROM maven:3.9-eclipse-temurin-17 AS builder
-# build the java code
 COPY . /spc
 WORKDIR /spc
-RUN mvn package
-# this will create a spring petclinic jar file
+RUN mvn package -DskipTests
 
 FROM eclipse-temurin:17-jre AS runner
-COPY --from=builder --chown=ubuntu /spc/target/spring-petclinic-3.3.0-SNAPSHOT.jar /app/spring-petclinic.jar
-USER ubuntu
 WORKDIR /app
+COPY --from=builder /spc/target/spring-petclinic-3.4.0-SNAPSHOT.jar spring-petclinic.jar
 EXPOSE 8080
 CMD ["java", "-jar", "spring-petclinic.jar"]
