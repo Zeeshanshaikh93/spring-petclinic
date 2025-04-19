@@ -1,13 +1,26 @@
-### Stage 1: Build the app ###
-FROM openjdk:21 AS builder
-ADD . /spring-petclinic
-WORKDIR /spring-petclinic
-RUN chmod +x mvnw
-RUN ./mvnw package -DskipTests
+# FROM openjdk:21 AS builder
+# ADD . /spring-petclinic
+# WORKDIR /spring-petclinic
+# RUN chmod +x mvnw
+# RUN ./mvnw package
 
-### Stage 2: Run the app ###
-FROM openjdk:17-jdk-alpine AS runner
+
+# FROM openjdk:17-jdk-alpine3.20 AS runner
+# EXPOSE 8080
+# WORKDIR /spc
+# COPY --from=builder /spring-petclinic/target/*.jar spc.jar
+# CMD ["java", "-jar", "spring-petclinic.jar"]
+
+FROM maven:3.9-eclipse-temurin-17 AS builder
+# build the java code
+COPY . /spc
 WORKDIR /spc
+RUN mvn package
+# this will create a spring petclinic jar file
+
+FROM eclipse-temurin:17-jre AS runner
+COPY --from=builder --chown=ubuntu /spc/target/spring-petclinic-3.3.0-SNAPSHOT.jar /app/spring-petclinic.jar
+USER ubuntu
+WORKDIR /app
 EXPOSE 8080
-COPY --from=builder /spring-petclinic/target/*.jar app.jar
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "spring-petclinic.jar"]
