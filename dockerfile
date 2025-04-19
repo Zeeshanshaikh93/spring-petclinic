@@ -5,7 +5,7 @@ RUN chmod +x mvnw
 RUN ./mvnw package
 
 
-FROM openjdk:17-jdk-alpine3.20 AS runner
+FROM openjdk:17-jdk-alpine AS runner
 EXPOSE 8080
 WORKDIR /spc
 COPY --from=builder /spring-petclinic/target/*.jar spc.jar
